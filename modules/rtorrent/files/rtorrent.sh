@@ -16,4 +16,3 @@ cd rtorrent
 ./configure --with-xmlrpc-c
 make
 make install
-ln -s /usr/local/bin/rtorrent /usr/bin/

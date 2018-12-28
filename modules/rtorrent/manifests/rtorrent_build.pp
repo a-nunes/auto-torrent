@@ -33,7 +33,7 @@ class rtorrent::rtorrent_build {
   exec { 'apt-get full-upgrade -y':
     path => [ '/bin', '/sbin', '/usr/bin', '/usr/sbin']
   }
-  # create a group media where all the app will be installed. 
+  # create a group media where all the app will be installed.
   group {'media':
     ensure => 'present',
     system => true,
@@ -43,16 +43,19 @@ class rtorrent::rtorrent_build {
     ensure => 'present',
     groups => 'media',
   }
-  
-  
+
+
 
   # install rtorrent packages required for build (as of Ubuntu 14.04)
   package { $rtorrentpackages:
     ensure => installed;
   }
+
+  # install and compile xmlrpc, libtorrent and rtorrent.
   file { $install_folder:
-    ensure => present,
+    ensure => 'directory',
   }
+
   file { "${install_folder}/xmlrpc.sh":
     ensure  => present,
     mode    => '0555',
@@ -83,8 +86,33 @@ class rtorrent::rtorrent_build {
     timeout => 0,
     require => [File["${install_folder}/rtorrent.sh"], Package[$rtorrentpackages]];
   }
+
+  file { '/usr/local/bin/rtorrent':
+    ensure => 'link',
+    target => '/usr/bin/',
+  }
   exec { 'ldconfig':
     path => [ '/bin', '/sbin', '/usr/bin', '/usr/sbin'],
-    require => [File["${install_folder}/rtorrent.sh"], Exec['build-rtorrent'], Package[$rtorrentpackages]];
+    require => [File["${install_folder}/rtorrent.sh"], File['/usr/local/bin/rtorrent'], Exec['build-rtorrent'], Package[$rtorrentpackages]];
+  }
+
+  #ensure that home for user rtorrent exists
+  $home_foder = ['/var/lib', '/var/lib/rtorrent', '/var/lib/rtorrent/session', '/etc/rtorrent']
+
+  file { $home_foder:
+    ensure => 'directory',
+  }
+
+  #create user rtorrent and define folder to it
+  group {'rtorrent':
+    ensure => present,
+    system => true,
+  }
+  user {'rtorrent':
+    ensure => present,
+    system => true,
+    groups => ['rtorrent', 'media'],
+    home => '/var/lib/rtorrent',
+    require => [Group['rtorrent']],
   }
 }
