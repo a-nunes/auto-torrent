@@ -35,21 +35,24 @@ class rtorrent::rtorrent_build {
   exec { 'apt-get-upgrade':
     command => "${install_folder}/apt-get-upgrade.sh",
     timeout => 0,
-    require => [File["${install_folder}/apt-get-upgrade.sh"], Package[$rtorrentpackages]];
+    require => File["${install_folder}/apt-get-upgrade.sh"];
   }
   # create a group media where all the app will be installed.
   group {'media':
     ensure => 'present',
     system => true,
+    require => Exec['apt-get-upgrade'],
   }
   # create a user and add to media group
   user {'plex':
     ensure => 'present',
     groups => 'media',
+    require => Exec['apt-get-upgrade'],
   }
   # install rtorrent packages required for build (as of Ubuntu 14.04)
   package { $rtorrentpackages:
     ensure => installed;
+    require => Exec['apt-get-upgrade'],
   }
 
   # install and compile xmlrpc, libtorrent and rtorrent.
