@@ -92,7 +92,7 @@ class rtorrent::rtorrent_build {
   }
   exec { 'ldconfig':
     path => [ '/bin', '/sbin', '/usr/bin', '/usr/sbin'],
-    require => [File["${install_folder}/rtorrent.sh"], File['/usr/local/bin/rtorrent'], Exec['build-rtorrent'], Package[$rtorrentpackages]];
+    require => [File["${install_folder}/rtorrent.sh"], File['/usr/bin/rtorrent'], Exec['build-rtorrent'], Package[$rtorrentpackages]];
   }
   #ensure that home for user rtorrent exists
   $home_foder = ['/var/lib', '/var/lib/rtorrent', '/var/lib/rtorrent/session', '/etc/rtorrent']
