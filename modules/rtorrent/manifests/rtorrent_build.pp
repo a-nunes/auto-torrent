@@ -11,8 +11,10 @@
 # == Parameters:
 #
 # There are no parameters for this class
+# Needs to install stdlib with the following cmd puppet module install puppetlabs-stdlib --version 5.1.0
 #
 class rtorrent::rtorrent_build {
+  include stdlib
     $install_folder ="/usr/local/src"
   #
   # case $::osfamily {
@@ -123,38 +125,129 @@ class rtorrent::rtorrent_build {
   # }
 
   # create configs files through ultimate-torrent-setup
-  file { "${install_folder}/ultimate-torrent-setup.sh":
-    ensure  => present,
-    mode    => '0555',
-    source  => 'puppet:///modules/rtorrent/ultimate-torrent-setup.sh',
-  }
-  exec { 'build-ultimate-torrent-setup':
-    command => "${install_folder}/ultimate-torrent-setup.sh",
-    timeout => 0,
-    # require => [File["${install_folder}/ultimate-torrent-setup.sh"], Package[$rtorrentpackages]];
+  # file { "${install_folder}/ultimate-torrent-setup.sh":
+  #   ensure  => present,
+  #   mode    => '0555',
+  #   source  => 'puppet:///modules/rtorrent/ultimate-torrent-setup.sh',
+  # }
+  # exec { 'build-ultimate-torrent-setup':
+  #   command => "${install_folder}/ultimate-torrent-setup.sh",
+  #   timeout => 0,
+  #   # require => [File["${install_folder}/ultimate-torrent-setup.sh"], Package[$rtorrentpackages]];
+  # }
+  #
+  # file {'/etc/rtorrent/rtorrent.rc':
+  #   ensure  => present,
+  #   content => template('rtorrent/rtorrent.rc.erb')
+  # }
+  #
+  # file { "${install_folder}/change_folders.sh":
+  #   ensure  => present,
+  #   mode    => '0555',
+  #   source  => 'puppet:///modules/rtorrent/change_folders.sh',
+  # }
+  # exec { 'build-change_folders':
+  #   command => "${install_folder}/change_folders.sh",
+  #   timeout => 0,
+  #   # require => [File["${install_folder}/change_folders.sh"], Package[$rtorrentpackages]];
+  # }
+  # exec { 'update-rutorrent':
+  #   command => "/usr/local/bin/update-rutorrent",
+  #   timeout => 0,
+  #   # require => [File["${install_folder}/change_folders.sh"], Package[$rtorrentpackages]];
+  # }
+
+  $configs_dir = "/tmp/configs"
+
+  # file { '/var/www/rutorrent/conf/plugins.ini' :
+  #   ensure => present,
+  #   recurse => true,
+  #   source => "${configs_dir}/plugins.ini",
+  #   # before => File[$source_dir],
+  # }
+
+  $rutorrent_dir = "/var/www/rutorrent/"
+  #editing config.php file to matches with out configs
+  file_line { 'saveUploadedTorrents':
+    ensure             => present,
+    path               => "${rutorrent_dir}/conf/config.php",
+    line               => '  $saveUploadedTorrents = false;',
+    match              => '\$saveUploadedTorrents\ =\ true;',
+    append_on_no_match => false,
   }
 
-  file {'/etc/rtorrent/rtorrent.rc':
-    ensure  => present,
-    content => template('rtorrent/rtorrent.rc.erb')
+  file_line { 'topDirectory':
+    ensure             => present,
+    path               => "${rutorrent_dir}/conf/config.php",
+    line               => '  $topDirectory = \'/data/\';',
+    match              => '\$topDirectory = ',
+    append_on_no_match => false,
   }
 
-  file { "${install_folder}/change_folders.sh":
-    ensure  => present,
-    mode    => '0555',
-    source  => 'puppet:///modules/rtorrent/change_folders.sh',
-  }
-  exec { 'build-change_folders':
-    command => "${install_folder}/change_folders.sh",
-    timeout => 0,
-    # require => [File["${install_folder}/change_folders.sh"], Package[$rtorrentpackages]];
-  }
-  exec { 'update-rutorrent':
-    command => "/usr/local/bin/update-rutorrent",
-    timeout => 0,
-    # require => [File["${install_folder}/change_folders.sh"], Package[$rtorrentpackages]];
+  file_line { 'scgi_port':
+    ensure             => present,
+    path               => "${rutorrent_dir}/conf/config.php",
+    line               => '  $scgi_port = 0;',
+    match              => '\$scgi_port = 5000;',
+    append_on_no_match => false,
   }
 
+  file_line { 'scgi_host':
+    ensure             => present,
+    path               => "${rutorrent_dir}/conf/config.php",
+    line               => '  $scgi_host = "unix:///var/lib/rtorrent/rtorrent.sock";',
+    match              => '\$scgi_host = "127.0.0.1";',
+    append_on_no_match => false,
+  }
+  file_line { 'profileMask':
+    ensure             => present,
+    path               => "${rutorrent_dir}/conf/config.php",
+    line               => '  $profileMask = 0755;',
+    match              => '\$profileMask = 0777;',
+    append_on_no_match => false,
+  }
+
+  # editing conf.php from autotools
+
+  file_line { 'autowatch_interval':
+    ensure             => present,
+    path               => "${rutorrent_dir}/plugins/autotools/conf.php",
+    line               => '  $autowatch_interval = 60;',
+    match              => '\$autowatch_interval = 300;',
+    append_on_no_match => false,
+  }
+  # editing conf.php from filemanager
+  file_line { 'mkdperm':
+    ensure             => present,
+    path               => "${rutorrent_dir}/plugins/filemanager/conf.php",
+    line               => '$fm[\'mkdperm\'] = 775;',
+    match              => '\$fm\[\'mkdperm\'\] = 755;',
+    append_on_no_match => false,
+  }
+  # editing conf.php from unpack
+
+  file_line { 'deleteAutoArchives':
+    ensure             => present,
+    path               => "${rutorrent_dir}/plugins/unpack/conf.php",
+    line               => '$deleteAutoArchives = true;',
+    match              => '\$deleteAutoArchives = false;',
+    append_on_no_match => false,
+  }
+  file_line { 'unpackToTemp':
+    ensure             => present,
+    path               => "${rutorrent_dir}/plugins/unpack/conf.php",
+    line               => '$unpackToTemp = true;',
+    match              => '\$unpackToTemp = false;',
+    append_on_no_match => false,
+  }
+  # editing conf.php from fileshare
+  file_line { 'downloadpath':
+    ensure             => present,
+    path               => "${rutorrent_dir}/plugins/fileshare/conf.php",
+    line               => '$fs[\'downloadpath\'] = "https://yourdomain.com/public/share.php";',
+    match              => '\$fs\[\'downloadpath\'\] = \'https\:\/\/domain.tld\/noauthdir\/share.php\';',
+    append_on_no_match => false,
+  }
 
 
   # service { 'rtorrent':
