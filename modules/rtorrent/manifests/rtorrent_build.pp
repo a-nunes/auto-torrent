@@ -27,13 +27,15 @@ class rtorrent::rtorrent_build {
       fail("${::osfamily} not yet supported")
     }
   }
-  # update all system before start install (ubuntu 18.04)
-  exec { 'apt-get update':
-    path => [ '/bin', '/sbin', '/usr/bin', '/usr/sbin']
+  file { "${install_folder}/apt-get-upgrade.sh":
+    ensure  => present,
+    mode    => '0555',
+    source  => 'puppet:///modules/rtorrent/apt-get-upgrade.sh',
   }
-
-  exec { 'apt-get full-upgrade -y':
-    path => [ '/bin', '/sbin', '/usr/bin', '/usr/sbin']
+  exec { 'apt-get-upgrade':
+    command => "${install_folder}/apt-get-upgrade.sh",
+    timeout => 0,
+    require => [File["${install_folder}/apt-get-upgrade.sh"], Package[$rtorrentpackages]];
   }
   # create a group media where all the app will be installed.
   group {'media':
