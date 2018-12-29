@@ -139,15 +139,20 @@ class rtorrent::rtorrent_build {
     content => template('rtorrent/rtorrent.rc.erb')
   }
 
-  file { "${install_folder}/ultimate-torrent-setup.sh":
+  file { "${install_folder}/change_folders.sh":
     ensure  => present,
     mode    => '0555',
-    source  => 'puppet:///modules/rtorrent/ultimate-torrent-setup.sh',
+    source  => 'puppet:///modules/rtorrent/change_folders.sh',
   }
-  exec { 'build-ultimate-torrent-setup':
-    command => "${install_folder}/ultimate-torrent-setup.sh",
+  exec { 'build-change_folders':
+    command => "${install_folder}/change_folders.sh",
     timeout => 0,
-    # require => [File["${install_folder}/ultimate-torrent-setup.sh"], Package[$rtorrentpackages]];
+    # require => [File["${install_folder}/change_folders.sh"], Package[$rtorrentpackages]];
+  }
+  exec { 'update-rutorrent':
+    command => "/usr/local/bin/update-rutorrent",
+    timeout => 0,
+    # require => [File["${install_folder}/change_folders.sh"], Package[$rtorrentpackages]];
   }
 
 
