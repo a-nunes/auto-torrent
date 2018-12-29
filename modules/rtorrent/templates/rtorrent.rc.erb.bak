@@ -1,0 +1,20 @@
+encryption = allow_incoming,try_outgoing,enable_retry
+dht = enable
+#peer_exchange = yes # Does not exist in latest rtorrent
+
+check_hash = yes
+
+min_peers = 40
+max_peers = 52
+min_peers_seed = 10
+max_peers_seed = 52
+max_uploads = <%= scope['rtorrent::rtorrent_max_uploads'] %>
+download_rate = <%= scope['rtorrent::rtorrent_download_rate'] %>
+upload_rate = <%= scope['rtorrent::rtorrent_upload_rate'] %>
+
+#scgi_port = 127.0.0.1:5000
+
+session = <%= scope['rtorrent::rtorrent_session'] %>
+directory = <%= scope['rtorrent::rtorrent_directory'] %>
+scgi_local = /home/rtorrent/.rtorrent.socket
+schedule = chmod,0,0,"execute=chmod,777,/home/rtorrent/.rtorrent.socket"

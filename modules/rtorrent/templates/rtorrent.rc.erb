@@ -1,0 +1,2 @@
+directory.default.set = <%= scope['rtorrent::rtorrent_download_folder'] %>
+execute2 = {sh,-c,/usr/bin/php /var/www/rutorrent/php/initplugins.php <%= scope['rtorrent::rtorrent_standard_user'] %> &}
