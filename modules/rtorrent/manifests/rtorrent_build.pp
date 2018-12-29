@@ -35,7 +35,7 @@ class rtorrent::rtorrent_build {
   exec { 'apt-get-upgrade':
     command => "${install_folder}/apt-get-upgrade.sh",
     timeout => 0,
-    require => [File["${install_folder}/apt-get-upgrade.sh"], Package[$rtorrentpackages]];
+    require => [File["${install_folder}/apt-get-upgrade.sh"]];
   }
   # create a group media where all the app will be installed.
   group {'media':
