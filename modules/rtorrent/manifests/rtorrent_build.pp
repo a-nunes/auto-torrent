@@ -27,6 +27,12 @@ class rtorrent::rtorrent_build {
       fail("${::osfamily} not yet supported")
     }
   }
+
+  # install and compile xmlrpc, libtorrent and rtorrent.
+  file { $install_folder:
+    ensure => 'directory',
+  }
+  
   file { "${install_folder}/apt-get-upgrade.sh":
     ensure  => present,
     mode    => '0555',
@@ -51,13 +57,8 @@ class rtorrent::rtorrent_build {
   }
   # install rtorrent packages required for build (as of Ubuntu 14.04)
   package { $rtorrentpackages:
-    ensure => installed;
+    ensure => installed,
     require => Exec['apt-get-upgrade'],
-  }
-
-  # install and compile xmlrpc, libtorrent and rtorrent.
-  file { $install_folder:
-    ensure => 'directory',
   }
 
   file { "${install_folder}/xmlrpc.sh":
