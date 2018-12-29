@@ -124,7 +124,7 @@ class rtorrent::rtorrent_build {
     require => [File["${install_folder}/mkdir.sh"], Package[$rtorrentpackages]];
   }
 
-  create configs files through ultimate-torrent-setup
+  #create configs files through ultimate-torrent-setup
   file { "${install_folder}/ultimate-torrent-setup.sh":
     ensure  => present,
     mode    => '0555',
